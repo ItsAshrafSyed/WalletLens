@@ -1,4 +1,4 @@
-# DelegateWatch
+# WalletLens
 
 Goal: a polished public-address Solana token delegation checker, deployed later on Vercel.
 
@@ -22,7 +22,9 @@ Scope includes frontend, API, server RPC parsing, fixtures, tests, config, READM
 - [x] Trace the affected subsystem.
 - [x] Architect the shape.
 - [x] Write the throughput checkpoint.
-- [ ] Delegate code-writing.
-- [ ] Verify on the matching surface.
-- [ ] Keep changes reviewable. No remote configured; skip PR and deployment until requested.
+- [x] Delegate code-writing.
+- [x] Unit tests, typecheck and production build passed. Parent owns HTTP/browser verification.
+- [x] Keep changes reviewable. No remote configured; skip PR and deployment until requested.
 - [ ] Review final implementation against the contract.
+
+Implementation accepts the parent-approved rename to WalletLens and cached pinned Next.js 15.5.25. Source is formatted, RPC keys stay server-only, and body/label contrast and sizing were revised after independent review.
