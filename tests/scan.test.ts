@@ -156,7 +156,7 @@ test("sanitizes transport errors and handles rate limiting", async () => {
   );
 });
 function request(body: string, headers: Record<string, string> = {}) {
-  return new Request("https://delegatewatch.test/api/scan", {
+  return new Request("https://walletlens.test/api/scan", {
     method: "POST",
     headers: { "Content-Type": "application/json", ...headers },
     body,

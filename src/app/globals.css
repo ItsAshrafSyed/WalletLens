@@ -286,7 +286,7 @@ h1 > span {
   font-size: 14px;
 }
 .input-wrap input::placeholder {
-  color: #97a49e;
+  color: #586e63;
 }
 .paste {
   border: 1px solid #dfe6e1;
@@ -1340,6 +1340,7 @@ details p,
 .account-foot,
 .result-scope,
 .copy-button,
+.demo-banner,
 .empty-message {
   color: #586e63;
 }
