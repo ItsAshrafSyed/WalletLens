@@ -1,5 +1,6 @@
 import { scanRequest } from "../../../lib/contracts";
 import { ScanError, scanWallet } from "../../../lib/scan";
+import { recordScan } from "../../../lib/stats";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -62,8 +63,11 @@ export async function POST(request: Request) {
     );
   }
   try {
-    return json(await scanWallet({ wallet: parsed.data.address, rpcUrl }), 200);
+    const result = await scanWallet({ wallet: parsed.data.address, rpcUrl });
+    await recordScan({ wallet: parsed.data.address, outcome: "success" });
+    return json(result, 200);
   } catch (error) {
+    await recordScan({ wallet: parsed.data.address, outcome: "failure" });
     if (error instanceof ScanError)
       return json({ error: error.message }, error.status);
     return json(

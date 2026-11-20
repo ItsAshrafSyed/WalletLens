@@ -14,7 +14,10 @@
     "next": "15.5.25",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "zod": "4.6.5"
+    "zod": "4.6.5",
+    "@solana/kit": "8.3.0",
+    "@solana/kit-plugin-wallet": "0.20.0",
+    "@solana/react": "8.3.0"
   },
   "devDependencies": {
     "@types/node": "24.13.4",

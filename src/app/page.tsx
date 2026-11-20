@@ -21,33 +21,17 @@ export default function Home() {
           <nav aria-label="Main navigation">
             <a href="#how-it-works">How it works</a>
             <a href="#questions">FAQ</a>
-            <a className="nav-check" href="#checker">
-              Check a wallet
-            </a>
           </nav>
         </div>
       </header>
       <main>
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-copy">
-            <span className="hero-tag">
-              <span className="solana-mark">
-                <i />
-                <i />
-                <i />
-              </span>
-              A clearer view of your Solana wallet
-            </span>
             <h1 id="hero-title">
               Know who can
               <br />
               move your <span>tokens.</span>
             </h1>
-            <p className="hero-description">
-              Approvals shouldn't be a mystery. See which token accounts
-              <br className="desktop-break" /> have a delegate, and exactly how
-              much they're allowed to move.
-            </p>
           </div>
           <div className="orbit-art" aria-hidden="true">
             <div className="orbit orbit-one" />
@@ -71,7 +55,7 @@ export default function Home() {
         <section className="trust-strip" aria-label="Tool principles">
           <span>
             <Icon name="eye" />
-            Read-only by design
+            Connection-free scans
           </span>
           <span>
             <Icon name="wallet" />
@@ -189,12 +173,14 @@ export default function Home() {
             </details>
             <details>
               <summary>
-                Can this tool move my tokens?<span>+</span>
+                Does removing an approval move my tokens?<span>+</span>
               </summary>
               <p>
-                No. WalletLens only reads public blockchain data. It never
-                connects to your wallet, requests a signature, or builds a
-                transaction. Never paste a seed phrase or private key here.
+                Scanning only reads public data. Removing a delegate requires
+                connecting the owner wallet and approving a simulated revoke
+                transaction. The revoke transfers no tokens, but you pay a
+                network fee in SOL. Never paste a seed phrase or private key
+                here.
               </p>
             </details>
             <details>
@@ -213,10 +199,11 @@ export default function Home() {
                 How do I remove an approval?<span>+</span>
               </summary>
               <p>
-                Revoking a delegate requires a transaction signed by the token
-                account owner. This version is read-only. Review the address in
-                Explorer and use a trusted wallet or tool that supports Solana
-                token delegate revocation.
+                Connect the wallet that owns the token account, then choose
+                Remove delegation. Review the full account, delegate, fee and
+                simulation result before approving in your wallet. WalletLens
+                confirms the transaction and refreshes the report. Permanent
+                mint delegates are outside this tool’s scope.
               </p>
             </details>
             <details>

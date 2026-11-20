@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { formatTokenAmount, walletAddress } from "../src/lib/contracts";
-import { scanWallet, TOKEN_PROGRAMS } from "../src/lib/scan";
+import {
+  formatTokenAmount,
+  walletAddress,
+  TOKEN_PROGRAMS,
+} from "../src/lib/contracts";
+import { scanWallet } from "../src/lib/scan";
 import { POST } from "../src/app/api/scan/route";
 
 const wallet = "11111111111111111111111111111111";

@@ -37,3 +37,8 @@ export function formatTokenAmount(raw: string, decimals: number): string {
   const fraction = normalized.slice(-decimals).replace(/0+$/, "");
   return normalized.slice(0, -decimals) + (fraction ? `.${fraction}` : "");
 }
+
+export const TOKEN_PROGRAMS = [
+  { id: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", label: "SPL Token" },
+  { id: "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", label: "Token-2022" },
+] satisfies { id: string; label: "SPL Token" | "Token-2022" }[];

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useCallback, useState, type FormEvent } from "react";
 import { scanResult, walletAddress, type ScanResult } from "../lib/contracts";
 import { demoResult } from "../lib/demo";
 import { Icon } from "./icons";
+import { WalletPanel, RevokeReview, useWalletRevoke } from "./wallet-revoke";
 
 type ScanState =
   | { kind: "idle" }
@@ -56,16 +57,15 @@ export function Checker() {
   const [state, setState] = useState<ScanState>({ kind: "idle" });
   const [pasteMessage, setPasteMessage] = useState("");
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const parsed = walletAddress.safeParse(address);
+  const scan = useCallback(async (value: string) => {
+    const parsed = walletAddress.safeParse(value);
     if (!parsed.success) {
       setState({
         kind: "error",
         message:
           "That address doesn't look right. Enter a valid Solana public wallet address.",
       });
-      return;
+      return false;
     }
     setState({ kind: "loading" });
     try {
@@ -85,17 +85,32 @@ export function Checker() {
             ? payload.error
             : "The scan could not be completed. Please try again.";
         setState({ kind: "error", message });
-        return;
+        return false;
       }
       const result = scanResult.parse(payload);
       setState({ kind: "success", result, demo: false });
+      return true;
     } catch {
       setState({
         kind: "error",
         message:
           "We couldn't complete the scan. Check your connection and try again.",
       });
+      return false;
     }
+  }, []);
+
+  const revoke = useWalletRevoke({
+    report:
+      state.kind === "success"
+        ? { result: state.result, demo: state.demo }
+        : null,
+    onConfirmed: scan,
+  });
+  const scanning = state.kind === "loading" || revoke.busy;
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!scanning) await scan(address);
   }
 
   async function paste() {
@@ -142,13 +157,13 @@ export function Checker() {
               aria-describedby={
                 state.kind === "error" ? "scan-error" : "address-help"
               }
-              disabled={state.kind === "loading"}
+              disabled={scanning}
             />
             <button
               type="button"
               className="paste"
               onClick={paste}
-              disabled={state.kind === "loading"}
+              disabled={scanning}
             >
               Paste
             </button>
@@ -162,11 +177,7 @@ export function Checker() {
               {pasteMessage}
             </p>
           )}
-          <button
-            className="scan-button"
-            type="submit"
-            disabled={state.kind === "loading"}
-          >
+          <button className="scan-button" type="submit" disabled={scanning}>
             {state.kind === "loading" ? (
               <>
                 <span className="spinner" />
@@ -183,7 +194,7 @@ export function Checker() {
         <div className="checker-bottom">
           <span>
             <Icon name="lock" size={14} />
-            No connection. No signatures.
+            Scan without connecting or signing.
           </span>
           <button
             type="button"
@@ -191,7 +202,7 @@ export function Checker() {
             onClick={() =>
               setState({ kind: "success", result: demoResult, demo: true })
             }
-            disabled={state.kind === "loading"}
+            disabled={scanning}
           >
             Explore a demo
           </button>
@@ -203,6 +214,20 @@ export function Checker() {
           </div>
         )}
       </section>
+
+      {(revoke.connected ||
+        (state.kind === "success" &&
+          !state.demo &&
+          state.result.delegatedAccounts.length > 0)) && (
+        <WalletPanel
+          flow={revoke}
+          onUseAddress={(value) => {
+            setAddress(value);
+            void scan(value);
+          }}
+        />
+      )}
+      <RevokeReview flow={revoke} />
 
       {state.kind === "success" && (
         <section
@@ -217,16 +242,11 @@ export function Checker() {
             </div>
           )}
           <div className="result-heading">
-            <div>
-              <span className="eyebrow">
-                {state.demo ? "Example report" : "Scan complete"}
-              </span>
-              <h2 id="results-title">
-                {state.result.delegatedAccounts.length
-                  ? `${state.result.delegatedAccounts.length} delegated token accounts`
-                  : "No account-level delegates found"}
-              </h2>
-            </div>
+            <h2 id="results-title">
+              {state.result.delegatedAccounts.length
+                ? `${state.result.delegatedAccounts.length} delegation${state.result.delegatedAccounts.length === 1 ? "" : "s"} found`
+                : "No delegations found"}
+            </h2>
             <span
               className={`result-icon ${state.result.delegatedAccounts.length ? "has-delegates" : ""}`}
             >
@@ -238,21 +258,12 @@ export function Checker() {
           </div>
           <div className="result-meta">
             <span>{state.result.totalAccounts} token accounts checked</span>
-            <span>SPL Token + Token-2022</span>
-            {!state.demo && (
-              <time dateTime={state.result.checkedAt}>
-                {new Date(state.result.checkedAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </time>
-            )}
           </div>
           <div className="scanned-wallet">
             <span>Wallet</span>
             <Address value={state.result.wallet} label="scanned wallet" />
           </div>
-          {state.result.delegatedAccounts.length > 0 ? (
+          {state.result.delegatedAccounts.length > 0 && (
             <div className="account-list">
               {state.result.delegatedAccounts.map((account, index) => (
                 <article
@@ -311,6 +322,29 @@ export function Checker() {
                       </dd>
                     </div>
                   </dl>
+                  {!state.demo && (
+                    <div className="account-revoke">
+                      <button
+                        type="button"
+                        className="revoke-button"
+                        disabled={
+                          scanning ||
+                          revoke.connected?.account.address !==
+                            state.result.wallet
+                        }
+                        onClick={() => void revoke.prepare(account)}
+                      >
+                        Remove delegation
+                      </button>
+                      {revoke.connected?.account.address !==
+                        state.result.wallet && (
+                        <p>
+                          Connect this token account’s owner wallet to remove
+                          its delegate.
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <div className="account-foot">
                     <span>{account.program}</span>
                     <span>
@@ -322,20 +356,17 @@ export function Checker() {
                 </article>
               ))}
             </div>
-          ) : (
-            <p className="empty-message">
-              No delegate is currently recorded on the token accounts returned
-              by either program. This is a limited check, not a wallet safety
-              assessment.
-            </p>
           )}
           <p className="result-scope">
-            <Icon name="info" size={16} />
-            {state.result.scope}
+            Token-account approvals only.
+            <a className="text-button" href="#questions">
+              Details
+            </a>
           </p>
           <button
             type="button"
             className="text-button reset-results"
+            disabled={revoke.busy}
             onClick={() => setState({ kind: "idle" })}
           >
             Close report
